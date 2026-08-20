@@ -1,0 +1,10 @@
+venv/
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+apps/client/.dart_tool/
+apps/client/build/
+apps/client/.pub-cache/
+apps/client/.pub/
+apps/client/windows/flutter/ephemeral/

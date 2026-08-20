@@ -1,0 +1,18 @@
+# AI Gateway Server
+fastapi==0.110.0
+uvicorn==0.27.1
+pydantic==2.6.3
+
+# Document Intelligence & RAG
+faiss-cpu==1.8.0
+numpy==1.26.4
+# (Optional: langchain or sentence-transformers for text chunking/embeddings depending on your RAG logic)
+
+# External AI Adapters
+openai==1.14.0
+anthropic==0.21.3
+google-generativeai==0.4.1
+
+# Local Voice AI (STT / TTS)
+openai-whisper
+# Note: Piper and XTTS usually require specific custom installations or binaries outside of standard pip packages, but standard TTS libraries can be added here later.
