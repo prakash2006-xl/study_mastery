@@ -33,7 +33,7 @@ class AntigravityTheme {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF1E1E24).withOpacity(0.6),
         elevation: 8,
         shape: RoundedRectangleBorder(

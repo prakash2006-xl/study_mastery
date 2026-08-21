@@ -16,3 +16,6 @@ google-generativeai==0.4.1
 # Local Voice AI (STT / TTS)
 openai-whisper
 # Note: Piper and XTTS usually require specific custom installations or binaries outside of standard pip packages, but standard TTS libraries can be added here later.
+
+# PDF Tools for Annotation Burning
+PyMuPDF==1.24.1

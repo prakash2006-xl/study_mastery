@@ -82,3 +82,32 @@ async def summarize_content(req: SummarizeRequest):
 @router.post("/speak")
 async def speak_text(text: str):
     return {"audio_url": "/static/audio_sample.mp3"}
+
+from core.pdf_annotator import annotate_pdf
+
+@router.post("/save_annotated_pdf")
+async def save_annotated_pdf(
+    original_pdf_path: str = Form(...),
+    annotations_json: str = Form(...),
+    page_metrics_json: str = Form(...)
+):
+    import uuid
+    # Create a temporary output file
+    temp_out = os.path.join("temp_uploads", f"annotated_{uuid.uuid4().hex}.pdf")
+    os.makedirs("temp_uploads", exist_ok=True)
+    
+    success, msg = annotate_pdf(
+        original_pdf_path=original_pdf_path,
+        output_pdf_path=temp_out,
+        annotations_json_str=annotations_json,
+        page_widths_json=page_metrics_json
+    )
+    
+    if not success:
+        raise HTTPException(status_code=500, detail=msg)
+        
+    return FileResponse(
+        temp_out,
+        media_type="application/pdf",
+        filename="annotated.pdf"
+    )

@@ -8,3 +8,5 @@ apps/client/build/
 apps/client/.pub-cache/
 apps/client/.pub/
 apps/client/windows/flutter/ephemeral/
+.env
+apps/ai_server/.env

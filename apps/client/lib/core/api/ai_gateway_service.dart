@@ -80,4 +80,44 @@ class AiGatewayService {
       return null;
     }
   }
+
+  /// Sends PDF and annotations to python backend for high-quality export
+  Future<String?> exportAnnotatedPdf(String originalPdfPath, String annotationsJson, String pageMetricsJson, {bool overwriteOriginal = false}) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/save_annotated_pdf'));
+      request.fields['original_pdf_path'] = originalPdfPath;
+      request.fields['annotations_json'] = annotationsJson;
+      request.fields['page_metrics_json'] = pageMetricsJson;
+
+      var response = await request.send();
+      
+      if (response.statusCode == 200) {
+        final bytes = await response.stream.toBytes();
+        
+        if (overwriteOriginal) {
+          final savedFile = File(originalPdfPath);
+          await savedFile.writeAsBytes(bytes);
+          return savedFile.path;
+        } else {
+          final directory = await getApplicationDocumentsDirectory();
+          final path = '${directory.path}/LearningOS_Scribbles';
+          final dir = Directory(path);
+          if (!await dir.exists()) {
+            await dir.create(recursive: true);
+          }
+          
+          final fileName = 'annotated_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          final savedFile = File('$path/$fileName');
+          await savedFile.writeAsBytes(bytes);
+          return savedFile.path;
+        }
+      } else {
+        print('Error exporting PDF: Server returned ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error exporting PDF: $e');
+      return null;
+    }
+  }
 }
