@@ -10,7 +10,7 @@ void main() async {
   
   // Initialize offline file paths before anything else boots
   await FilesystemService.initialize();
-  debugPrint('LearningOS initialized at: ${FilesystemService.appDocDir.path}');
+  debugPrint('LearningOS initialized at: ${FilesystemService.appDocDir?.path ?? "Web (No Local Path)"}');
 
   runApp(
     const ProviderScope(

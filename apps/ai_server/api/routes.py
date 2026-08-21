@@ -1,59 +1,84 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import shutil
+import os
+from core.rag_engine import rag_engine
+from core.voice_engine import voice_engine
 
 router = APIRouter()
 
-class ExplainRequest(BaseModel):
-    context: str
+class AskRequest(BaseModel):
+    document_id: str
     query: str
 
 class SummarizeRequest(BaseModel):
-    context: str
-
-class QuizRequest(BaseModel):
-    topic: str
-    difficulty: str
-
-class EvaluateRequest(BaseModel):
-    question: str
-    user_answer: str
-
-class GenerateTasksRequest(BaseModel):
-    topic: str
-    duration_minutes: int
-
-class RetrieveContextRequest(BaseModel):
-    query: str
     document_id: str
 
-class SpeakRequest(BaseModel):
-    text: str
-    voice: str = "default"
+@router.post("/index_document")
+async def index_document(document_id: str = Form(...), file: UploadFile = File(...)):
+    # Save uploaded file to a temporary location for PyPDFLoader
+    temp_dir = "temp_uploads"
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_file_path = os.path.join(temp_dir, f"{document_id}.pdf")
+    
+    try:
+        with open(temp_file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        chunks = rag_engine.index_pdf(document_id, temp_file_path)
+        return {"status": "success", "chunks_indexed": chunks, "document_id": document_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Clean up temporary file if needed
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
-@router.post("/explain")
-async def explain_concept(req: ExplainRequest):
-    return {"response": f"AI Explanation for '{req.query}' based on provided context."}
+@router.post("/ask_document")
+async def ask_document(req: AskRequest):
+    try:
+        answer = rag_engine.ask_question(req.document_id, req.query)
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/voice_chat")
+async def voice_chat(document_id: str = Form(...), file: UploadFile = File(...)):
+    """Receives voice, transcribes it, runs RAG, and returns TTS audio."""
+    temp_audio_path = os.path.join(voice_engine.audio_cache_dir, f"incoming_{file.filename}")
+    
+    try:
+        with open(temp_audio_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        # Step 1: Transcribe audio to text
+        transcript = voice_engine.transcribe_audio(temp_audio_path)
+        if transcript.startswith("Error"):
+            raise HTTPException(status_code=500, detail=transcript)
+            
+        # Step 2: RAG Pipeline to get answer
+        answer = rag_engine.ask_question(document_id, transcript)
+        
+        # Step 3: Text to Speech
+        response_audio_path = voice_engine.generate_speech(answer)
+        
+        return FileResponse(
+            response_audio_path, 
+            media_type="audio/mpeg", 
+            filename="response.mp3",
+            headers={"X-Transcript": transcript.replace('\n', ' ')}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(temp_audio_path):
+            os.remove(temp_audio_path)
 
 @router.post("/summarize")
 async def summarize_content(req: SummarizeRequest):
     return {"summary": "Generated summary of the provided content."}
 
-@router.post("/quiz")
-async def generate_quiz(req: QuizRequest):
-    return {"quiz": [{"question": f"Sample question for {req.topic}?", "options": ["A", "B", "C"], "answer": "A"}]}
-
-@router.post("/evaluate")
-async def evaluate_answer(req: EvaluateRequest):
-    return {"feedback": "Good attempt. Here is how you can improve.", "score": 80}
-
-@router.post("/generateTasks")
-async def generate_tasks(req: GenerateTasksRequest):
-    return {"tasks": [f"Study {req.topic} chapter 1", f"Review {req.topic} concepts"]}
-
-@router.post("/retrieveContext")
-async def retrieve_context(req: RetrieveContextRequest):
-    return {"context": "Retrieved context chunks from FAISS for the document."}
-
 @router.post("/speak")
-async def speak_text(req: SpeakRequest):
+async def speak_text(text: str):
     return {"audio_url": "/static/audio_sample.mp3"}
