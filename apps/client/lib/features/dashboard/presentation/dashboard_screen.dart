@@ -22,8 +22,8 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktop = constraints.maxWidth >= 1200;
-          final isTablet = constraints.maxWidth >= 800 && constraints.maxWidth < 1200;
+          final isDesktop = constraints.maxWidth >= 1350;
+          final isTablet = constraints.maxWidth >= 800 && constraints.maxWidth < 1350;
 
           return CustomScrollView(
             slivers: [

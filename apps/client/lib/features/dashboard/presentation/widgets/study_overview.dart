@@ -75,7 +75,7 @@ class StudyOverview extends ConsumerWidget {
                             interval: 2,
                             getTitlesWidget: (value, meta) {
                               if (value == 0) return const Text('0h', style: TextStyle(fontSize: 12, color: Colors.grey));
-                              return Text('\${value.toInt()}h', style: const TextStyle(fontSize: 12, color: Colors.grey));
+                              return Text('${value.toInt()}h', style: const TextStyle(fontSize: 12, color: Colors.grey));
                             },
                             reservedSize: 28,
                           ),

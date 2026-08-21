@@ -7,23 +7,22 @@ class SummaryCardsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.0),
-      child: SizedBox(
-        height: 180,
-        child: Row(
-          children: [
-            Expanded(flex: 3, child: ClockCard()),
-            SizedBox(width: 16),
-            Expanded(flex: 2, child: StatsCard(title: 'Tasks Today', value: '5 / 8', subtitle: '62%', icon: Icons.task_alt, color: Colors.green)),
-            SizedBox(width: 16),
-            Expanded(flex: 2, child: StatsCard(title: 'Study Time', value: '3h 24m', subtitle: '+1.2h vs yesterday', icon: Icons.schedule, color: Colors.blue)),
-            SizedBox(width: 16),
-            Expanded(flex: 2, child: StatsCard(title: 'Streak', value: '12 days', subtitle: 'Keep it up!', icon: Icons.local_fire_department, color: Colors.orange)),
-            SizedBox(width: 16),
-            Expanded(flex: 2, child: StatsCard(title: 'Completed', value: '23', subtitle: 'Tasks', icon: Icons.check_box, color: Colors.teal)),
-          ],
-        ),
+    return SizedBox(
+      height: 180,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        children: const [
+          SizedBox(width: 580, child: ClockCard()),
+          SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Tasks Today', value: '5 / 8', subtitle: '62%', icon: Icons.task_alt, color: Colors.green)),
+          SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Study Time', value: '3h 24m', subtitle: '+1.2h vs yesterday', icon: Icons.schedule, color: Colors.blue)),
+          SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Streak', value: '12 days', subtitle: 'Keep it up!', icon: Icons.local_fire_department, color: Colors.orange)),
+          SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Completed', value: '23', subtitle: 'Tasks', icon: Icons.check_box, color: Colors.teal)),
+        ],
       ),
     );
   }

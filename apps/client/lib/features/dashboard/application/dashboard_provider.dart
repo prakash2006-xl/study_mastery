@@ -79,7 +79,7 @@ class StudySessionNotifier extends AsyncNotifier<List<StudySession>> {
       // Automatically log the activity
       await repo.insertActivityLog(ActivityLog(
         id: const Uuid().v4(),
-        description: 'Study Session: \${(durationSeconds / 60).toStringAsFixed(0)}m',
+        description: 'Study Session: ${(durationSeconds / 60).toStringAsFixed(0)}m',
         iconType: 'timer',
         createdAt: DateTime.now(),
       ));
