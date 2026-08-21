@@ -2,6 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/dashboard_repository.dart';
 
+// --- App Launch Time ---
+final appLaunchTimeProvider = Provider<DateTime>((ref) {
+  return DateTime.now();
+});
+
 // --- Alarms ---
 final alarmNotifierProvider = AsyncNotifierProvider<AlarmNotifier, List<Alarm>>(() {
   return AlarmNotifier();

@@ -109,10 +109,16 @@ class PremiumSidebar extends StatelessWidget {
                   onTap: () => onDestinationSelected(7),
                 ),
                 _SidebarItem(
-                  icon: Icons.settings_rounded,
-                  label: 'Settings',
+                  icon: Icons.music_note_rounded,
+                  label: 'Music',
                   isSelected: selectedIndex == 8,
                   onTap: () => onDestinationSelected(8),
+                ),
+                _SidebarItem(
+                  icon: Icons.settings_rounded,
+                  label: 'Settings',
+                  isSelected: selectedIndex == 9,
+                  onTap: () => onDestinationSelected(9),
                 ),
               ],
             ),

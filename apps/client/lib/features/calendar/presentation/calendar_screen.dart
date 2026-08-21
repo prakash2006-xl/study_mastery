@@ -126,11 +126,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final scheduleAsync = ref.watch(scheduleItemNotifierProvider);
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddEventModal,
-        backgroundColor: theme.colorScheme.primary,
-        child: const Icon(Icons.add),
-      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -144,13 +139,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.today),
+                    tooltip: 'Today',
                     onPressed: () {
                       setState(() {
                         _focusedDay = DateTime.now();
                         _selectedDay = _focusedDay;
                       });
                     },
-                  )
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _showAddEventModal,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Event'),
+                  ),
                 ],
               ),
             ),

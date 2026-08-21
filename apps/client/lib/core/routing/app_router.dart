@@ -13,6 +13,7 @@ import '../../features/notes/presentation/notes_screen.dart';
 import '../../features/alarms/presentation/alarms_screen.dart';
 import '../../features/focus/presentation/focus_screen.dart';
 import '../../features/analytics/presentation/analytics_screen.dart';
+import '../../features/music/presentation/music_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -47,6 +48,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: '/analytics', builder: (context, state) => const AnalyticsScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/music', builder: (context, state) => const MusicScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen())],

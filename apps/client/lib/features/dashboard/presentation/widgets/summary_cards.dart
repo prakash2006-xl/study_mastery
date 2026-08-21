@@ -23,7 +23,11 @@ class SummaryCardsRow extends ConsumerWidget {
       final now = DateTime.now();
       for (final t in tasks) {
         if (t.isCompleted) totalCompleted++;
-        if (t.createdAt.year == now.year && t.createdAt.month == now.month && t.createdAt.day == now.day) {
+        
+        final isDueToday = t.dueDate != null && t.dueDate!.year == now.year && t.dueDate!.month == now.month && t.dueDate!.day == now.day;
+        final isCreatedToday = t.createdAt.year == now.year && t.createdAt.month == now.month && t.createdAt.day == now.day;
+        
+        if (!t.isCompleted || isDueToday || (t.dueDate == null && isCreatedToday)) {
           tasksToday++;
           if (t.isCompleted) completedToday++;
         }
