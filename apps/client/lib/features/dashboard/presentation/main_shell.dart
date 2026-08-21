@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'widgets/global_ai_chat.dart';
+import 'widgets/premium_sidebar.dart';
 
 class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -8,52 +10,55 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isWideScreen = MediaQuery.of(context).size.width >= 600;
+    final bool isWideScreen = MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
+      drawer: isWideScreen ? null : Drawer(
+        child: PremiumSidebar(
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: (index) {
+            _goBranch(index);
+            Navigator.pop(context); // close drawer
+          },
+        ),
+      ),
       body: isWideScreen
           ? Row(
               children: [
-                NavigationRail(
+                PremiumSidebar(
                   selectedIndex: navigationShell.currentIndex,
                   onDestinationSelected: _goBranch,
-                  labelType: NavigationRailLabelType.all,
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.dashboard_outlined),
-                      selectedIcon: Icon(Icons.dashboard),
-                      label: Text('Dashboard'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.library_books_outlined),
-                      selectedIcon: Icon(Icons.library_books),
-                      label: Text('Library'),
-                    ),
-                  ],
                 ),
-                const VerticalDivider(thickness: 1, width: 1),
                 Expanded(child: navigationShell),
               ],
             )
-          : navigationShell,
-      bottomNavigationBar: isWideScreen
-          ? null
-          : NavigationBar(
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _goBranch,
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
+          : Column(
+              children: [
+                AppBar(
+                  title: const Text('PLOS', style: TextStyle(fontWeight: FontWeight.bold)),
+                  leading: Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.library_books_outlined),
-                  selectedIcon: Icon(Icons.library_books),
-                  label: 'Library',
-                ),
+                Expanded(child: navigationShell),
               ],
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (ctx) => const GlobalAiChat(),
+          );
+        },
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        tooltip: 'Global AI Companion',
+        child: const Icon(Icons.psychology, size: 32),
+      ),
     );
   }
 

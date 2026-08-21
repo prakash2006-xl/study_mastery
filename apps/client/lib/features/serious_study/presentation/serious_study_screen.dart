@@ -15,7 +15,7 @@ import '../../../core/pdf/local_pdf_export_service.dart';
 import '../application/annotation_provider.dart';
 import '../../../core/database/annotation_repository.dart';
 
-enum DrawingTool { pen, highlighter, eraser, sticky_note, bookmark, rectangle, circle, line, arrow }
+enum DrawingTool { pen, highlighter, eraser, sticky_note, bookmark, rectangle, circle, line, arrow, triangle, star }
 
 class Stroke {
   final List<PointVector> points;
@@ -593,7 +593,11 @@ class _SeriousStudyScreenState extends ConsumerState<SeriousStudyScreen> {
                 Container(width: 1, height: 24, color: Colors.grey.withOpacity(0.5), margin: const EdgeInsets.symmetric(horizontal: 4)),
                 _buildToolButton(DrawingTool.sticky_note, Icons.sticky_note_2),
                 _buildToolButton(DrawingTool.rectangle, Icons.crop_square),
+                _buildToolButton(DrawingTool.circle, Icons.circle_outlined),
+                _buildToolButton(DrawingTool.triangle, Icons.change_history),
+                _buildToolButton(DrawingTool.star, Icons.star_border),
                 _buildToolButton(DrawingTool.line, Icons.horizontal_rule),
+                _buildToolButton(DrawingTool.arrow, Icons.arrow_outward),
                 Container(width: 1, height: 24, color: Colors.grey.withOpacity(0.5), margin: const EdgeInsets.symmetric(horizontal: 4)),
                 _buildColorButton(Colors.black),
                 _buildColorButton(Colors.redAccent),
@@ -629,7 +633,7 @@ class _SeriousStudyScreenState extends ConsumerState<SeriousStudyScreen> {
                 children: [
                   const Icon(Icons.line_weight, size: 20),
                   const SizedBox(width: 8),
-                  const Text('Size'),
+                  Text('${_currentTool.name.toUpperCase()} Size'),
                   Expanded(
                     child: Slider(
                       value: _currentSize,
@@ -860,6 +864,26 @@ class ScribblePainter extends CustomPainter {
           ..lineTo(end.dx - arrowLength * cos(angle - arrowAngle), end.dy - arrowLength * sin(angle - arrowAngle))
           ..moveTo(end.dx, end.dy)
           ..lineTo(end.dx - arrowLength * cos(angle + arrowAngle), end.dy - arrowLength * sin(angle + arrowAngle));
+        canvas.drawPath(path, paint);
+      } else if (stroke.tool == DrawingTool.triangle) {
+        final path = Path()
+          ..moveTo((start.dx + end.dx) / 2, start.dy) // Top center
+          ..lineTo(end.dx, end.dy) // Bottom right
+          ..lineTo(start.dx, end.dy) // Bottom left
+          ..close();
+        canvas.drawPath(path, paint);
+      } else if (stroke.tool == DrawingTool.star) {
+        final radius = (start - end).distance / 2;
+        final center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+        final path = Path();
+        for (int i = 0; i < 10; i++) {
+          final angle = -pi / 2 + (i * pi / 5);
+          final r = i.isEven ? radius : radius / 2;
+          final p = Offset(center.dx + r * cos(angle), center.dy + r * sin(angle));
+          if (i == 0) path.moveTo(p.dx, p.dy);
+          else path.lineTo(p.dx, p.dy);
+        }
+        path.close();
         canvas.drawPath(path, paint);
       }
     }

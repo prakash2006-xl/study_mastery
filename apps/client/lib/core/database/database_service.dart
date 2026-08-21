@@ -40,7 +40,7 @@ class DatabaseService {
 
     return await openDatabase(
       dbPath,
-      version: 2,
+      version: 3,
       onCreate: _createSchema,
       onUpgrade: _upgradeSchema,
     );
@@ -83,13 +83,65 @@ class DatabaseService {
       )
     ''');
 
-    // Tasks Table
+    // Tasks Table (v3 includes category and priority)
     await db.execute('''
       CREATE TABLE tasks (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         is_completed INTEGER NOT NULL DEFAULT 0,
         due_date INTEGER,
+        created_at INTEGER NOT NULL,
+        category TEXT DEFAULT 'General',
+        priority TEXT DEFAULT 'Medium'
+      )
+    ''');
+
+    // --- New Tables for Dashboard (v3) ---
+
+    await db.execute('''
+      CREATE TABLE alarms (
+        id TEXT PRIMARY KEY,
+        label TEXT NOT NULL,
+        time_milliseconds INTEGER NOT NULL,
+        is_enabled INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE study_sessions (
+        id TEXT PRIMARY KEY,
+        start_time INTEGER NOT NULL,
+        end_time INTEGER NOT NULL,
+        duration_seconds INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE schedule_items (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        scheduled_time INTEGER NOT NULL,
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE quick_notes (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE activity_logs (
+        id TEXT PRIMARY KEY,
+        description TEXT NOT NULL,
+        icon_type TEXT NOT NULL,
         created_at INTEGER NOT NULL
       )
     ''');
@@ -106,6 +158,54 @@ class DatabaseService {
         )
       ''');
       await db.execute('ALTER TABLE documents ADD COLUMN folder_id TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute("ALTER TABLE tasks ADD COLUMN category TEXT DEFAULT 'General'");
+      await db.execute("ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'Medium'");
+      
+      await db.execute('''
+        CREATE TABLE alarms (
+          id TEXT PRIMARY KEY,
+          label TEXT NOT NULL,
+          time_milliseconds INTEGER NOT NULL,
+          is_enabled INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE study_sessions (
+          id TEXT PRIMARY KEY,
+          start_time INTEGER NOT NULL,
+          end_time INTEGER NOT NULL,
+          duration_seconds INTEGER NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE schedule_items (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          scheduled_time INTEGER NOT NULL,
+          is_completed INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE quick_notes (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE activity_logs (
+          id TEXT PRIMARY KEY,
+          description TEXT NOT NULL,
+          icon_type TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      ''');
     }
   }
 }

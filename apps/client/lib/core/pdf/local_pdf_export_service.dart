@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
@@ -110,6 +111,56 @@ class LocalPdfExportService {
             final p1 = scaledPoints.first;
             final p2 = scaledPoints.last;
             graphics.drawLine(pen, p1, p2);
+          }
+        } else if (toolIdx == 8) {
+          // Arrow
+          if (scaledPoints.length >= 2) {
+            final p1 = scaledPoints.first;
+            final p2 = scaledPoints.last;
+            graphics.drawLine(pen, p1, p2);
+            // Draw arrow head
+            const arrowLength = 20.0;
+            const arrowAngle = 0.5;
+            final angle = (p2 - p1).direction;
+            final path = PdfPath()
+              ..addLine(p2, Offset(p2.dx - arrowLength * cos(angle - arrowAngle), p2.dy - arrowLength * sin(angle - arrowAngle)))
+              ..addLine(Offset(p2.dx - arrowLength * cos(angle - arrowAngle), p2.dy - arrowLength * sin(angle - arrowAngle)), p2)
+              ..addLine(p2, Offset(p2.dx - arrowLength * cos(angle + arrowAngle), p2.dy - arrowLength * sin(angle + arrowAngle)));
+            graphics.drawPath(path, pen: pen);
+          }
+        } else if (toolIdx == 9) {
+          // Triangle
+          if (scaledPoints.length >= 2) {
+            final start = scaledPoints.first;
+            final end = scaledPoints.last;
+            final path = PdfPath()
+              ..addLine(Offset((start.dx + end.dx) / 2, start.dy), end)
+              ..addLine(end, Offset(start.dx, end.dy))
+              ..addLine(Offset(start.dx, end.dy), Offset((start.dx + end.dx) / 2, start.dy));
+            graphics.drawPath(path, pen: pen);
+          }
+        } else if (toolIdx == 10) {
+          // Star
+          if (scaledPoints.length >= 2) {
+            final start = scaledPoints.first;
+            final end = scaledPoints.last;
+            final radius = (start - end).distance / 2;
+            final center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+            final path = PdfPath();
+            for (int i = 0; i <= 10; i++) {
+              final angle = -pi / 2 + (i * pi / 5);
+              final r = i.isEven ? radius : radius / 2;
+              final p = Offset(center.dx + r * cos(angle), center.dy + r * sin(angle));
+              if (i == 0) {
+                path.addLine(p, p); // Hack to start path in Syncfusion
+              } else {
+                final prevAngle = -pi / 2 + ((i - 1) * pi / 5);
+                final prevR = (i - 1).isEven ? radius : radius / 2;
+                final prevP = Offset(center.dx + prevR * cos(prevAngle), center.dy + prevR * sin(prevAngle));
+                path.addLine(prevP, p);
+              }
+            }
+            graphics.drawPath(path, pen: pen);
           }
         }
       }

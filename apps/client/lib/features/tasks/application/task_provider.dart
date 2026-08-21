@@ -37,7 +37,7 @@ class TaskNotifier extends AsyncNotifier<List<StudyTask>> {
     return tasks;
   }
 
-  Future<void> addTask(String title) async {
+  Future<void> addTask(String title, {String category = 'General', String priority = 'Medium'}) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(taskRepositoryProvider.future);
@@ -45,6 +45,8 @@ class TaskNotifier extends AsyncNotifier<List<StudyTask>> {
         id: const Uuid().v4(),
         title: title,
         createdAt: DateTime.now(),
+        category: category,
+        priority: priority,
       );
       await repo.insertTask(newTask);
       return _fetchAndSortTasks();

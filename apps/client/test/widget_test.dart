@@ -12,7 +12,7 @@ class MockTaskNotifier extends AsyncNotifier<List<StudyTask>> implements TaskNot
   @override
   Future<List<StudyTask>> build() async => [];
   @override
-  Future<void> addTask(String title) async {}
+  Future<void> addTask(String title, {String category = 'General', String priority = 'Medium'}) async {}
   @override
   Future<void> toggleTaskCompletion(StudyTask task) async {}
   @override
@@ -23,7 +23,15 @@ class MockDocumentNotifier extends AsyncNotifier<List<Document>> implements Docu
   @override
   Future<List<Document>> build() async => [];
   @override
-  Future<void> importDocument(String title, String filePath) async {}
+  Future<void> importDocument(String title, String filePath, {String? folderId}) async {}
+  @override
+  Future<void> renameDocument(String id, String newTitle) async {}
+  @override
+  Future<void> moveDocument(String id, String? newFolderId) async {}
+  @override
+  Future<void> deleteDocument(String id) async {}
+  @override
+  Future<void> openDocument(Document doc) async {}
 }
 
 void main() {

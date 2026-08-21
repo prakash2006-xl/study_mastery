@@ -8,6 +8,8 @@ class StudyTask {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime? dueDate;
+  final String category;
+  final String priority;
 
   StudyTask({
     required this.id,
@@ -15,6 +17,8 @@ class StudyTask {
     this.isCompleted = false,
     required this.createdAt,
     this.dueDate,
+    this.category = 'General',
+    this.priority = 'Medium',
   });
 
   factory StudyTask.fromMap(Map<String, dynamic> map) {
@@ -26,6 +30,8 @@ class StudyTask {
       dueDate: map['due_date'] != null 
           ? DateTime.fromMillisecondsSinceEpoch(map['due_date']) 
           : null,
+      category: map['category'] ?? 'General',
+      priority: map['priority'] ?? 'Medium',
     );
   }
 
@@ -36,6 +42,8 @@ class StudyTask {
       'is_completed': isCompleted ? 1 : 0,
       'created_at': createdAt.millisecondsSinceEpoch,
       'due_date': dueDate?.millisecondsSinceEpoch,
+      'category': category,
+      'priority': priority,
     };
   }
 
@@ -45,6 +53,8 @@ class StudyTask {
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? dueDate,
+    String? category,
+    String? priority,
   }) {
     return StudyTask(
       id: id ?? this.id,
@@ -52,6 +62,8 @@ class StudyTask {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       dueDate: dueDate ?? this.dueDate,
+      category: category ?? this.category,
+      priority: priority ?? this.priority,
     );
   }
 }
