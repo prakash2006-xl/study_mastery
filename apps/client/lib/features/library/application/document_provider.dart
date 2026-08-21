@@ -105,4 +105,13 @@ class DocumentNotifier extends AsyncNotifier<List<Document>> {
       return _fetchDocuments();
     });
   }
+
+  Future<void> deleteDocument(String id) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      await repo.deleteDocument(id);
+      return _fetchDocuments();
+    });
+  }
 }

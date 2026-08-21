@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/task_repository.dart';
+import '../../dashboard/application/dashboard_provider.dart';
 
 enum TaskSortOrder { newest, oldest, uncompletedFirst }
 
@@ -49,6 +50,7 @@ class TaskNotifier extends AsyncNotifier<List<StudyTask>> {
         priority: priority,
       );
       await repo.insertTask(newTask);
+      ref.read(activityLogNotifierProvider.notifier).logActivity('Created task: $title', 'task');
       return _fetchAndSortTasks();
     });
   }
@@ -59,6 +61,9 @@ class TaskNotifier extends AsyncNotifier<List<StudyTask>> {
       final repo = await ref.read(taskRepositoryProvider.future);
       final updatedTask = task.copyWith(isCompleted: !task.isCompleted);
       await repo.updateTask(updatedTask);
+      if (updatedTask.isCompleted) {
+        ref.read(activityLogNotifierProvider.notifier).logActivity('Completed task: ${task.title}', 'task');
+      }
       return _fetchAndSortTasks();
     });
   }

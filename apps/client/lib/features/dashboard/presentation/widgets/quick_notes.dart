@@ -28,10 +28,7 @@ class QuickNotesPanel extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add, size: 20),
-                  onPressed: () {
-                    // Logic to add note
-                    ref.read(quickNoteNotifierProvider.notifier).addQuickNote('New Note', 'Details...');
-                  },
+                  onPressed: () => _showAddNoteDialog(context, ref),
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),
@@ -75,6 +72,10 @@ class QuickNotesPanel extends ConsumerWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                GestureDetector(
+                                  onTap: () => ref.read(quickNoteNotifierProvider.notifier).deleteQuickNote(note.id),
+                                  child: const Icon(Icons.close, size: 14, color: Colors.grey),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -96,6 +97,48 @@ class QuickNotesPanel extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAddNoteDialog(BuildContext context, WidgetRef ref) {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Quick Note'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: contentController,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Content'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                ref.read(quickNoteNotifierProvider.notifier).addQuickNote(
+                  titleController.text,
+                  contentController.text,
+                );
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }

@@ -17,7 +17,18 @@ class SchedulePanel extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Today's Schedule", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Today's Schedule", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.add, size: 20),
+                  onPressed: () => _showAddEventDialog(context, ref),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             Expanded(
               child: scheduleAsync.when(
@@ -75,6 +86,11 @@ class SchedulePanel extends ConsumerWidget {
                                 size: 18,
                               ),
                             ),
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () => ref.read(scheduleItemNotifierProvider.notifier).deleteScheduleItem(item.id),
+                              child: const Icon(Icons.close, color: Colors.grey, size: 16),
+                            ),
                           ],
                         ),
                       );
@@ -100,6 +116,63 @@ class SchedulePanel extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showAddEventDialog(BuildContext context, WidgetRef ref) {
+    final titleController = TextEditingController();
+    TimeOfDay selectedTime = TimeOfDay.now();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Add Event'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Event Title'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text('Time: ${selectedTime.format(context)}'),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () async {
+                          final time = await showTimePicker(context: context, initialTime: selectedTime);
+                          if (time != null) {
+                            setState(() => selectedTime = time);
+                          }
+                        },
+                        child: const Text('Change'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                ElevatedButton(
+                  onPressed: () {
+                    if (titleController.text.isNotEmpty) {
+                      final now = DateTime.now();
+                      final dt = DateTime(now.year, now.month, now.day, selectedTime.hour, selectedTime.minute);
+                      ref.read(scheduleItemNotifierProvider.notifier).addScheduleItem(titleController.text, dt);
+                      Navigator.pop(ctx);
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          }
+        );
+      },
     );
   }
 }

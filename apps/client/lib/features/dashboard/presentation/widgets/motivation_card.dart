@@ -5,6 +5,17 @@ class MotivationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final quotes = [
+      '"The expert in anything was once a beginner. Keep showing up."',
+      '"Don\'t watch the clock; do what it does. Keep going."',
+      '"The future depends on what you do today."',
+      '"Success is the sum of small efforts, repeated day-in and day-out."',
+      '"It always seems impossible until it is done."',
+      '"The secret of getting ahead is getting started."',
+    ];
+    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
+    final quote = quotes[dayOfYear % quotes.length];
+
     return Card(
       child: Stack(
         children: [
@@ -41,16 +52,16 @@ class MotivationCard extends StatelessWidget {
               children: [
                 const Text('Motivation Corner', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                const Text(
-                  '"The expert in anything was once a beginner.\nKeep showing up."',
-                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.white70),
+                Text(
+                  quote,
+                  style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.white70),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Container(width: 20, height: 1, color: Colors.white54),
                     const SizedBox(width: 8),
-                    const Text('You got this, Kavin! 🚀', style: TextStyle(fontSize: 12, color: Colors.white54)),
+                    const Text('You got this! 🚀', style: TextStyle(fontSize: 12, color: Colors.white54)),
                   ],
                 ),
               ],

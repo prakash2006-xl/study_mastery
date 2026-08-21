@@ -112,6 +112,7 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
         scheduledTime: scheduledTime,
         createdAt: DateTime.now(),
       ));
+      ref.read(activityLogNotifierProvider.notifier).logActivity('Added schedule: $title', 'document');
       return repo.getTodayScheduleItems();
     });
   }
@@ -127,6 +128,14 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
         isCompleted: !item.isCompleted,
         createdAt: item.createdAt,
       ));
+      return repo.getTodayScheduleItems();
+    });
+  }
+  Future<void> deleteScheduleItem(String id) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repo = await ref.read(dashboardRepositoryProvider.future);
+      await repo.deleteScheduleItem(id);
       return repo.getTodayScheduleItems();
     });
   }
@@ -154,6 +163,7 @@ class QuickNoteNotifier extends AsyncNotifier<List<QuickNote>> {
         content: content,
         createdAt: DateTime.now(),
       ));
+      ref.read(activityLogNotifierProvider.notifier).logActivity('Added note: $title', 'document');
       return repo.getRecentQuickNotes();
     });
   }

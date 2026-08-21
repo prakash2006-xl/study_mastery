@@ -140,6 +140,10 @@ class DocumentRepository {
   Future<void> deleteFolder(String folderId) async {
     await _db.delete('folders', where: 'id = ?', whereArgs: [folderId]);
   }
+
+  Future<void> deleteDocument(String id) async {
+    await _db.delete('documents', where: 'id = ?', whereArgs: [id]);
+  }
 }
 
 final documentRepositoryProvider = FutureProvider<DocumentRepository>((ref) async {

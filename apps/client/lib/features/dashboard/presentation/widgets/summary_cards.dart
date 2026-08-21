@@ -1,27 +1,90 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../application/dashboard_provider.dart';
+import '../../../tasks/application/task_provider.dart';
 
-class SummaryCardsRow extends StatelessWidget {
+class SummaryCardsRow extends ConsumerWidget {
   const SummaryCardsRow({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Fetch real data
+    final tasksState = ref.watch(taskNotifierProvider);
+    final sessionsState = ref.watch(studySessionNotifierProvider);
+
+    // 2. Compute Tasks stats
+    int tasksToday = 0;
+    int completedToday = 0;
+    int totalCompleted = 0;
+
+    tasksState.whenData((tasks) {
+      final now = DateTime.now();
+      for (final t in tasks) {
+        if (t.isCompleted) totalCompleted++;
+        if (t.createdAt.year == now.year && t.createdAt.month == now.month && t.createdAt.day == now.day) {
+          tasksToday++;
+          if (t.isCompleted) completedToday++;
+        }
+      }
+    });
+
+    final taskProgress = tasksToday > 0 ? (completedToday / tasksToday) : 0.0;
+    final taskProgressStr = '${(taskProgress * 100).toInt()}%';
+
+    // 3. Compute Study Time & Streak
+    int studySecondsToday = 0;
+    int streakDays = 0;
+
+    sessionsState.whenData((sessions) {
+      final now = DateTime.now();
+      
+      // Calculate today's time
+      for (final s in sessions) {
+        if (s.startTime.year == now.year && s.startTime.month == now.month && s.startTime.day == now.day) {
+          studySecondsToday += s.durationSeconds;
+        }
+      }
+      
+      // Calculate streak
+      final dates = sessions.map((s) => DateTime(s.startTime.year, s.startTime.month, s.startTime.day)).toSet().toList();
+      dates.sort((a, b) => b.compareTo(a)); // Newest first
+      
+      DateTime expectedDate = DateTime(now.year, now.month, now.day);
+      if (dates.isNotEmpty && dates.first.isBefore(expectedDate)) {
+          expectedDate = expectedDate.subtract(const Duration(days: 1)); // allow yesterday as current streak if today not studied yet
+      }
+      
+      for (final date in dates) {
+        if (date.isAtSameMomentAs(expectedDate)) {
+          streakDays++;
+          expectedDate = expectedDate.subtract(const Duration(days: 1));
+        } else if (date.isBefore(expectedDate)) {
+          break;
+        }
+      }
+    });
+
+    final hours = studySecondsToday ~/ 3600;
+    final mins = (studySecondsToday % 3600) ~/ 60;
+    final studyTimeStr = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
+
     return SizedBox(
       height: 180,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        children: const [
-          SizedBox(width: 580, child: ClockCard()),
-          SizedBox(width: 16),
-          SizedBox(width: 300, child: StatsCard(title: 'Tasks Today', value: '5 / 8', subtitle: '62%', icon: Icons.task_alt, color: Colors.green)),
-          SizedBox(width: 16),
-          SizedBox(width: 300, child: StatsCard(title: 'Study Time', value: '3h 24m', subtitle: '+1.2h vs yesterday', icon: Icons.schedule, color: Colors.blue)),
-          SizedBox(width: 16),
-          SizedBox(width: 300, child: StatsCard(title: 'Streak', value: '12 days', subtitle: 'Keep it up!', icon: Icons.local_fire_department, color: Colors.orange)),
-          SizedBox(width: 16),
-          SizedBox(width: 300, child: StatsCard(title: 'Completed', value: '23', subtitle: 'Tasks', icon: Icons.check_box, color: Colors.teal)),
+        children: [
+          const SizedBox(width: 580, child: ClockCard()),
+          const SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Tasks Today', value: '$completedToday / $tasksToday', subtitle: taskProgressStr, icon: Icons.task_alt, color: Colors.green, progress: taskProgress)),
+          const SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Study Time', value: studyTimeStr, subtitle: 'Today', icon: Icons.schedule, color: Colors.blue)),
+          const SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Streak', value: '$streakDays days', subtitle: 'Keep it up!', icon: Icons.local_fire_department, color: Colors.orange)),
+          const SizedBox(width: 16),
+          SizedBox(width: 300, child: StatsCard(title: 'Completed', value: '$totalCompleted', subtitle: 'Total Lifetime', icon: Icons.check_box, color: Colors.teal)),
         ],
       ),
     );
@@ -151,6 +214,7 @@ class StatsCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final double? progress;
 
   const StatsCard({
     super.key,
@@ -159,6 +223,7 @@ class StatsCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.progress,
   });
 
   @override
@@ -189,10 +254,10 @@ class StatsCard extends StatelessWidget {
                 Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
-            if (title == 'Tasks Today') ...[
+            if (title == 'Tasks Today' && progress != null) ...[
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: 0.62,
+                value: progress,
                 backgroundColor: color.withOpacity(0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(color),
                 borderRadius: BorderRadius.circular(4),

@@ -11,11 +11,50 @@ class FocusTimer extends ConsumerStatefulWidget {
 }
 
 class _FocusTimerState extends ConsumerState<FocusTimer> {
-  final int _totalSeconds = 25 * 60;
+  int _totalSeconds = 25 * 60;
   int _secondsRemaining = 25 * 60;
   bool _isRunning = false;
   Timer? _timer;
   DateTime? _startTime;
+
+  void _setCustomTime() async {
+    final controller = TextEditingController(text: (_totalSeconds ~/ 60).toString());
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Custom Timer (minutes)'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: 'e.g., 25',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final val = int.tryParse(controller.text);
+              if (val != null && val > 0) {
+                Navigator.pop(ctx, val);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      _timer?.cancel();
+      setState(() {
+        _totalSeconds = result * 60;
+        _secondsRemaining = _totalSeconds;
+        _isRunning = false;
+        _startTime = null;
+      });
+    }
+  }
 
   void _toggleTimer() {
     if (_isRunning) {
@@ -81,7 +120,12 @@ class _FocusTimerState extends ConsumerState<FocusTimer> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Focus Timer', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Icon(Icons.arrow_forward, color: Colors.grey.shade600, size: 20),
+                IconButton(
+                  icon: Icon(Icons.tune, color: Colors.grey.shade400, size: 20),
+                  onPressed: _setCustomTime,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
             const Spacer(),

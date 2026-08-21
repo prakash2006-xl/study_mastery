@@ -224,12 +224,18 @@ class LibraryScreen extends ConsumerWidget {
                                 onSelected: (value) {
                                   if (value == 'rename') {
                                     _showRenameDocumentDialog(context, ref, doc.id, doc.title);
+                                  } else if (value == 'delete') {
+                                    ref.read(documentNotifierProvider.notifier).deleteDocument(doc.id);
                                   }
                                 },
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
                                     value: 'rename',
                                     child: Text('Rename'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Delete', style: TextStyle(color: Colors.redAccent)),
                                   ),
                                 ],
                                 icon: const Icon(Icons.more_vert),
