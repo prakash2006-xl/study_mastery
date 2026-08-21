@@ -177,7 +177,7 @@ class _MusicScreenState extends State<MusicScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _isUsingLocal ? Icons.folder_music : Icons.radio, 
+                        _isUsingLocal ? Icons.library_music : Icons.radio, 
                         size: 64, 
                         color: theme.colorScheme.primary
                       ),

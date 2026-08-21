@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../dashboard/application/dashboard_provider.dart';
-import '../../../tasks/application/task_provider.dart';
+import '../../tasks/application/task_provider.dart';
 import 'package:intl/intl.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
