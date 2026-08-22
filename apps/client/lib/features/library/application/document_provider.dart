@@ -65,12 +65,12 @@ class DocumentNotifier extends AsyncNotifier<List<Document>> {
     return docs;
   }
 
-  Future<void> importDocument(String title, String filePath) async {
+  Future<String> importDocument(String title, String filePath) async {
+    final docId = const Uuid().v4();
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(documentRepositoryProvider.future);
       final folderId = ref.read(currentFolderIdProvider);
-      final docId = const Uuid().v4();
       final newDoc = Document(
         id: docId,
         title: title,
@@ -86,6 +86,7 @@ class DocumentNotifier extends AsyncNotifier<List<Document>> {
       
       return _fetchDocuments();
     });
+    return docId;
   }
 
   Future<void> renameDocument(String id, String newTitle) async {

@@ -1,12 +1,17 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 
 class Stroke {
   final List<PointVector> points;
   final Color color;
   final double size;
+  final bool isEraser;
 
-  Stroke({required this.points, required this.color, required this.size});
+  Stroke({required this.points, required this.color, required this.size, this.isEraser = false});
 }
 
 class ScribbleScreen extends StatefulWidget {
@@ -21,13 +26,17 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
   Stroke? currentStroke;
   Color _currentColor = Colors.white;
   double _currentSize = 5.0;
+  bool _isEraser = false;
+  
+  final GlobalKey _canvasKey = GlobalKey();
 
   void _onPointerDown(PointerDownEvent event) {
     setState(() {
       currentStroke = Stroke(
         points: [PointVector(event.localPosition.dx, event.localPosition.dy)],
-        color: _currentColor,
-        size: _currentSize,
+        color: _isEraser ? Theme.of(context).colorScheme.surface : _currentColor,
+        size: _isEraser ? _currentSize * 3 : _currentSize,
+        isEraser: _isEraser,
       );
     });
   }
@@ -64,12 +73,47 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
     });
   }
 
+  Future<void> _saveCanvas() async {
+    try {
+      final boundary = _canvasKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+
+      final buffer = byteData.buffer.asUint8List();
+
+      final docDir = await getApplicationDocumentsDirectory();
+      final path = '${docDir.path}/Scribble_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File(path);
+      await file.writeAsBytes(buffer);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved to Documents: Scribble_${DateTime.now().millisecondsSinceEpoch}.png')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save image: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scribble Canvas'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveCanvas,
+            tooltip: 'Save Image',
+          ),
           IconButton(
             icon: const Icon(Icons.undo),
             onPressed: _undo,
@@ -86,41 +130,70 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
         onPointerDown: _onPointerDown,
         onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Theme.of(context).colorScheme.surface,
-          child: CustomPaint(
-            painter: ScribblePainter(
-              strokes: strokes,
-              currentStroke: currentStroke,
+        child: RepaintBoundary(
+          key: _canvasKey,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Theme.of(context).colorScheme.surface,
+            child: CustomPaint(
+              painter: ScribblePainter(
+                strokes: strokes,
+                currentStroke: currentStroke,
+              ),
             ),
           ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.circle, color: Colors.white),
-              onPressed: () => setState(() => _currentColor = Colors.white),
-            ),
-            IconButton(
-              icon: const Icon(Icons.circle, color: Colors.blueAccent),
-              onPressed: () => setState(() => _currentColor = Colors.blueAccent),
-            ),
-            IconButton(
-              icon: const Icon(Icons.circle, color: Colors.redAccent),
-              onPressed: () => setState(() => _currentColor = Colors.redAccent),
-            ),
-            Slider(
-              value: _currentSize,
-              min: 2,
-              max: 20,
-              onChanged: (val) => setState(() => _currentSize = val),
-            ),
-          ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.draw, color: !_isEraser ? Colors.white : Colors.grey),
+                onPressed: () => setState(() => _isEraser = false),
+                tooltip: 'Pen',
+              ),
+              IconButton(
+                icon: Icon(Icons.cleaning_services, color: _isEraser ? Colors.white : Colors.grey),
+                onPressed: () => setState(() => _isEraser = true),
+                tooltip: 'Eraser',
+              ),
+              const SizedBox(width: 16),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.white),
+                onPressed: () => setState(() { _currentColor = Colors.white; _isEraser = false; }),
+              ),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.blueAccent),
+                onPressed: () => setState(() { _currentColor = Colors.blueAccent; _isEraser = false; }),
+              ),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.redAccent),
+                onPressed: () => setState(() { _currentColor = Colors.redAccent; _isEraser = false; }),
+              ),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.greenAccent),
+                onPressed: () => setState(() { _currentColor = Colors.greenAccent; _isEraser = false; }),
+              ),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.yellowAccent),
+                onPressed: () => setState(() { _currentColor = Colors.yellowAccent; _isEraser = false; }),
+              ),
+              IconButton(
+                icon: const Icon(Icons.circle, color: Colors.purpleAccent),
+                onPressed: () => setState(() { _currentColor = Colors.purpleAccent; _isEraser = false; }),
+              ),
+              const SizedBox(width: 16),
+              Slider(
+                value: _currentSize,
+                min: 2,
+                max: 20,
+                onChanged: (val) => setState(() => _currentSize = val),
+              ),
+            ],
+          ),
         ),
       ),
     );

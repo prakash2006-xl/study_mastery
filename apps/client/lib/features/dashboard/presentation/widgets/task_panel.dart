@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/database/task_repository.dart';
 import '../../../tasks/application/task_provider.dart';
 
@@ -136,8 +137,22 @@ class _TaskPanelState extends ConsumerState<TaskPanel> {
                   List<StudyTask> filteredTasks = tasks;
                   if (_activeTab == 'Completed') {
                     filteredTasks = tasks.where((t) => t.isCompleted).toList();
-                  } else if (_activeTab == 'Today' || _activeTab == 'Upcoming') {
-                    filteredTasks = tasks.where((t) => !t.isCompleted).toList();
+                  } else if (_activeTab == 'Today') {
+                    final now = DateTime.now();
+                    filteredTasks = tasks.where((t) {
+                      if (t.isCompleted) return false;
+                      final isDueToday = t.dueDate != null && t.dueDate!.year == now.year && t.dueDate!.month == now.month && t.dueDate!.day == now.day;
+                      final isCreatedToday = t.createdAt.year == now.year && t.createdAt.month == now.month && t.createdAt.day == now.day;
+                      return isDueToday || (t.dueDate == null && isCreatedToday);
+                    }).toList();
+                  } else if (_activeTab == 'Upcoming') {
+                    final now = DateTime.now();
+                    filteredTasks = tasks.where((t) {
+                      if (t.isCompleted) return false;
+                      final isDueToday = t.dueDate != null && t.dueDate!.year == now.year && t.dueDate!.month == now.month && t.dueDate!.day == now.day;
+                      final isCreatedToday = t.createdAt.year == now.year && t.createdAt.month == now.month && t.createdAt.day == now.day;
+                      return !(isDueToday || (t.dueDate == null && isCreatedToday));
+                    }).toList();
                   }
 
                   if (filteredTasks.isEmpty) {
@@ -266,11 +281,26 @@ class TaskItemWidget extends ConsumerWidget {
             
             // Date / Time Placeholder
             SizedBox(
-              width: 60,
-              child: Text(
-                completed ? 'Today' : '9:30 PM', // Placeholder
-                textAlign: TextAlign.end,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              width: 80,
+              child: Builder(
+                builder: (context) {
+                  final now = DateTime.now();
+                  final isDueToday = task.dueDate != null && task.dueDate!.year == now.year && task.dueDate!.month == now.month && task.dueDate!.day == now.day;
+                  final isCreatedToday = task.createdAt.year == now.year && task.createdAt.month == now.month && task.createdAt.day == now.day;
+                  
+                  String dateLabel;
+                  if (task.dueDate != null) {
+                    dateLabel = isDueToday ? 'Today' : DateFormat('MMM d').format(task.dueDate!);
+                  } else {
+                    dateLabel = isCreatedToday ? 'Today' : DateFormat('MMM d').format(task.createdAt);
+                  }
+
+                  return Text(
+                    dateLabel,
+                    textAlign: TextAlign.end,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  );
+                }
               ),
             ),
           ],

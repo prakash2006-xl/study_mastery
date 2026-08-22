@@ -3,8 +3,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../library/application/document_provider.dart';
 
+import 'package:file_picker/file_picker.dart';
+
 class SeriousStudyTile extends ConsumerWidget {
   const SeriousStudyTile({super.key});
+
+  void _pickFromDevice(BuildContext context, WidgetRef ref) async {
+    try {
+      final result = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+      if (result != null && result.path != null) {
+        final path = result.path!;
+        final name = result.name;
+        // Import it to library
+        final docId = await ref.read(documentNotifierProvider.notifier).importDocument(name, path);
+        
+        if (context.mounted) {
+          Navigator.pop(context); // Close dialog
+          context.push('/serious_study', extra: {
+            'filePath': path,
+            'documentId': docId,
+          });
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
 
   void _showDocumentPicker(BuildContext context, WidgetRef ref) {
     final docsAsync = ref.read(documentNotifierProvider);
@@ -16,14 +45,23 @@ class SeriousStudyTile extends ConsumerWidget {
           title: const Text('Select Document for Deep Study'),
           content: SizedBox(
             width: double.maxFinite,
-            height: 300,
-            child: docsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => const Center(child: Text('Error loading library')),
-              data: (docs) {
-                if (docs.isEmpty) {
-                  return const Center(child: Text('No documents found in Library.\nPlease import a PDF first.', textAlign: TextAlign.center));
-                }
+            height: 350,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.folder_open, color: Colors.blue),
+                  title: const Text('Pick from Device...', style: TextStyle(fontWeight: FontWeight.bold)),
+                  onTap: () => _pickFromDevice(ctx, ref),
+                ),
+                const Divider(),
+                Expanded(
+                  child: docsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, st) => const Center(child: Text('Error loading library')),
+                    data: (docs) {
+                      if (docs.isEmpty) {
+                        return const Center(child: Text('No documents found in Library.', textAlign: TextAlign.center));
+                      }
                 return ListView.builder(
                   shrinkWrap: true,
                   itemCount: docs.length,
@@ -43,6 +81,9 @@ class SeriousStudyTile extends ConsumerWidget {
                   },
                 );
               },
+                  ),
+                ),
+              ],
             ),
           ),
           actions: [

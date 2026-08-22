@@ -27,15 +27,39 @@ class _MusicScreenState extends State<MusicScreen> {
   bool _isUsingLocal = false;
   int _currentIndex = 0;
 
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
+  bool _isShuffle = false;
+  int _repeatMode = 1; // 0: None, 1: All, 2: One
+
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
-    _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    _audioPlayer.setReleaseMode(ReleaseMode.stop);
     _audioPlayer.setVolume(_volume);
 
+    _audioPlayer.onDurationChanged.listen((d) {
+      if (mounted) setState(() => _duration = d);
+    });
+    _audioPlayer.onPositionChanged.listen((p) {
+      if (mounted) setState(() => _position = p);
+    });
+
     _audioPlayer.onPlayerComplete.listen((event) {
-      _playNext();
+      if (_repeatMode == 2) {
+        if (_isPlaying) _audioPlayer.play(_getCurrentSource());
+      } else if (_repeatMode == 1 || _isShuffle) {
+        _playNext();
+      } else {
+        // None: Stop if we reach the end
+        final listLength = (_isUsingLocal && _localPlaylist.isNotEmpty) ? _localPlaylist.length : _assetPlaylist.length;
+        if (_currentIndex == listLength - 1) {
+          setState(() => _isPlaying = false);
+        } else {
+          _playNext();
+        }
+      }
     });
     
     _loadLocalAudio();
@@ -122,7 +146,25 @@ class _MusicScreenState extends State<MusicScreen> {
 
   void _playNext() async {
     final listLength = (_isUsingLocal && _localPlaylist.isNotEmpty) ? _localPlaylist.length : _assetPlaylist.length;
-    _currentIndex = (_currentIndex + 1) % listLength;
+    if (_isShuffle && listLength > 1) {
+      int nextIndex;
+      do {
+        nextIndex = DateTime.now().millisecondsSinceEpoch % listLength;
+      } while (nextIndex == _currentIndex);
+      _currentIndex = nextIndex;
+    } else {
+      _currentIndex = (_currentIndex + 1) % listLength;
+    }
+    
+    if (_isPlaying) {
+      await _audioPlayer.play(_getCurrentSource());
+    }
+    setState(() {});
+  }
+
+  void _playPrevious() async {
+    final listLength = (_isUsingLocal && _localPlaylist.isNotEmpty) ? _localPlaylist.length : _assetPlaylist.length;
+    _currentIndex = (_currentIndex - 1 + listLength) % listLength;
     if (_isPlaying) {
       await _audioPlayer.play(_getCurrentSource());
     }
@@ -192,24 +234,45 @@ class _MusicScreenState extends State<MusicScreen> {
                       playlist.isNotEmpty ? p.basename(playlist[_currentIndex % playlist.length]) : 'No tracks',
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(
+                          '${_position.inMinutes}:${(_position.inSeconds % 60).toString().padLeft(2, '0')}',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        Expanded(
+                          child: Slider(
+                            value: _position.inSeconds.toDouble(),
+                            min: 0,
+                            max: _duration.inSeconds > 0 ? _duration.inSeconds.toDouble() : 1.0,
+                            onChanged: (val) {
+                              _audioPlayer.seek(Duration(seconds: val.toInt()));
+                            },
+                          ),
+                        ),
+                        Text(
+                          '${_duration.inMinutes}:${(_duration.inSeconds % 60).toString().padLeft(2, '0')}',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
-                          icon: Icon(_isUsingLocal ? Icons.album : Icons.folder, size: 28),
-                          onPressed: _toggleSource,
-                          tooltip: 'Switch Source',
+                          icon: Icon(
+                            Icons.shuffle, 
+                            color: _isShuffle ? theme.colorScheme.primary : Colors.grey,
+                            size: 24,
+                          ),
+                          onPressed: () => setState(() => _isShuffle = !_isShuffle),
+                          tooltip: 'Shuffle',
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.skip_previous, size: 36),
-                          onPressed: playlist.isNotEmpty ? () {
-                            setState(() {
-                              _currentIndex = (_currentIndex - 1 + playlist.length) % playlist.length;
-                            });
-                            if (_isPlaying) _audioPlayer.play(_getCurrentSource());
-                          } : null,
+                          onPressed: playlist.isNotEmpty ? _playPrevious : null,
                         ),
                         const SizedBox(width: 16),
                         FloatingActionButton(
@@ -222,9 +285,33 @@ class _MusicScreenState extends State<MusicScreen> {
                           icon: const Icon(Icons.skip_next, size: 36),
                           onPressed: playlist.isNotEmpty ? _playNext : null,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.file_download, size: 28),
+                          icon: Icon(
+                            _repeatMode == 2 ? Icons.repeat_one : Icons.repeat,
+                            color: _repeatMode == 0 ? Colors.grey : theme.colorScheme.primary,
+                            size: 24,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _repeatMode = (_repeatMode + 1) % 3;
+                            });
+                          },
+                          tooltip: 'Repeat Mode',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(_isUsingLocal ? Icons.album : Icons.folder, size: 24),
+                          onPressed: _toggleSource,
+                          tooltip: 'Switch Source',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.file_download, size: 24),
                           onPressed: _importAudio,
                           tooltip: 'Import Local Audio',
                         ),
