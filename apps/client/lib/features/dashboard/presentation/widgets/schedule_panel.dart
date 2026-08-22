@@ -34,7 +34,14 @@ class SchedulePanel extends ConsumerWidget {
               child: scheduleAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, st) => Center(child: Text('Error: $err')),
-                data: (items) {
+                data: (allItems) {
+                  final now = DateTime.now();
+                  final items = allItems.where((item) => 
+                    item.scheduledTime.year == now.year && 
+                    item.scheduledTime.month == now.month && 
+                    item.scheduledTime.day == now.day
+                  ).toList();
+                  
                   if (items.isEmpty) {
                     return const Center(child: Text('No schedule for today.', style: TextStyle(color: Colors.grey)));
                   }

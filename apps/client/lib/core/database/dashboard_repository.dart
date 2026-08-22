@@ -239,6 +239,14 @@ class DashboardRepository {
     return maps.map((m) => ScheduleItem.fromMap(m)).toList();
   }
 
+  Future<List<ScheduleItem>> getAllScheduleItems() async {
+    final maps = await _db.query(
+      'schedule_items',
+      orderBy: 'scheduled_time ASC'
+    );
+    return maps.map((m) => ScheduleItem.fromMap(m)).toList();
+  }
+
   // Quick Notes
   Future<void> insertQuickNote(QuickNote note) async {
     await _db.insert('quick_notes', note.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);

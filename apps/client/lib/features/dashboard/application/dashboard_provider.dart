@@ -105,7 +105,7 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
   @override
   Future<List<ScheduleItem>> build() async {
     final repo = await ref.read(dashboardRepositoryProvider.future);
-    return repo.getTodayScheduleItems();
+    return repo.getAllScheduleItems();
   }
 
   Future<void> addScheduleItem(String title, DateTime scheduledTime) async {
@@ -119,7 +119,7 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
         createdAt: DateTime.now(),
       ));
       ref.read(activityLogNotifierProvider.notifier).logActivity('Added schedule: $title', 'document');
-      return repo.getTodayScheduleItems();
+      return repo.getAllScheduleItems();
     });
   }
 
@@ -134,7 +134,7 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
         isCompleted: !item.isCompleted,
         createdAt: item.createdAt,
       ));
-      return repo.getTodayScheduleItems();
+      return repo.getAllScheduleItems();
     });
   }
   Future<void> deleteScheduleItem(String id) async {
@@ -142,7 +142,7 @@ class ScheduleItemNotifier extends AsyncNotifier<List<ScheduleItem>> {
     state = await AsyncValue.guard(() async {
       final repo = await ref.read(dashboardRepositoryProvider.future);
       await repo.deleteScheduleItem(id);
-      return repo.getTodayScheduleItems();
+      return repo.getAllScheduleItems();
     });
   }
 }
