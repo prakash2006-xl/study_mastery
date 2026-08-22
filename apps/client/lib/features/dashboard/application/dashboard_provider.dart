@@ -3,8 +3,9 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/dashboard_repository.dart';
 
 // --- App Launch Time ---
+final _startupTime = DateTime.now();
 final appLaunchTimeProvider = Provider<DateTime>((ref) {
-  return DateTime.now();
+  return _startupTime;
 });
 
 // --- Alarms ---

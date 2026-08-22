@@ -199,14 +199,7 @@ class AnalyticsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      final activeDiff = DateTime.now().difference(appLaunchTime);
-                      final hours = activeDiff.inHours;
-                      final mins = (activeDiff.inMinutes % 60);
-                      return _buildStatCard('App Active Time', '${hours}h ${mins}m', Icons.smartphone, Colors.blue, theme);
-                    }
-                  ),
+                  child: AppActiveTimeCard(appLaunchTime: appLaunchTime, theme: theme),
                 ),
               ],
             ),
@@ -238,6 +231,65 @@ class AnalyticsScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class AppActiveTimeCard extends StatefulWidget {
+  final DateTime appLaunchTime;
+  final ThemeData theme;
+  const AppActiveTimeCard({super.key, required this.appLaunchTime, required this.theme});
+
+  @override
+  State<AppActiveTimeCard> createState() => _AppActiveTimeCardState();
+}
+
+class _AppActiveTimeCardState extends State<AppActiveTimeCard> {
+  late DateTime _now;
+  // We use a timer to tick every minute so the UI updates
+  late final Stream<DateTime> _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _now = DateTime.now();
+    _timer = Stream.periodic(const Duration(seconds: 15), (_) => DateTime.now());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DateTime>(
+      stream: _timer,
+      initialData: _now,
+      builder: (context, snapshot) {
+        final current = snapshot.data ?? _now;
+        final activeDiff = current.difference(widget.appLaunchTime);
+        final hours = activeDiff.inHours;
+        final mins = (activeDiff.inMinutes % 60);
+        
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.smartphone, color: Colors.blue, size: 24),
+                ),
+                const SizedBox(height: 16),
+                Text('${hours}h ${mins}m', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text('App Active Time', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
 }

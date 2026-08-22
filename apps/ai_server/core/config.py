@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
-    GROQ_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = "gsk_u2ySbWNr9g0isPHlXIQ9WGdyb3FY7BCVUWL33s9lfijS3I5bDlZ"
 
     # Local AI Settings
     OLLAMA_BASE_URL: str = "http://localhost:11434"
