@@ -253,7 +253,7 @@ class _AppActiveTimeCardState extends State<AppActiveTimeCard> {
   void initState() {
     super.initState();
     _now = DateTime.now();
-    _timer = Stream.periodic(const Duration(seconds: 15), (_) => DateTime.now());
+    _timer = Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
   }
 
   @override
@@ -266,6 +266,11 @@ class _AppActiveTimeCardState extends State<AppActiveTimeCard> {
         final activeDiff = current.difference(widget.appLaunchTime);
         final hours = activeDiff.inHours;
         final mins = (activeDiff.inMinutes % 60);
+        final secs = (activeDiff.inSeconds % 60);
+        
+        final timeString = hours > 0 
+            ? '${hours}h ${mins}m ${secs}s'
+            : '${mins}m ${secs}s';
         
         return Card(
           child: Padding(
@@ -282,7 +287,7 @@ class _AppActiveTimeCardState extends State<AppActiveTimeCard> {
                   child: const Icon(Icons.smartphone, color: Colors.blue, size: 24),
                 ),
                 const SizedBox(height: 16),
-                Text('${hours}h ${mins}m', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(timeString, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 const Text('App Active Time', style: TextStyle(fontSize: 12, color: Colors.grey)),
               ],
