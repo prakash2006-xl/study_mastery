@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -38,6 +39,19 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 40),
+
+          _buildSectionHeader('Parental Monitoring & Privacy'),
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: const Icon(Icons.family_restroom_rounded, color: Colors.purpleAccent),
+              title: const Text('Family Insights', style: TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: const Text('Local parental activity monitoring, screen time & privacy controls', style: TextStyle(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () => context.go('/family_insights'),
+            ),
+          ),
+          const SizedBox(height: 24),
           
           _buildSectionHeader('App Settings'),
           _buildSettingsTile(Icons.dark_mode, 'Dark Mode', true),

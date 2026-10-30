@@ -23,15 +23,13 @@ class MockDocumentNotifier extends AsyncNotifier<List<Document>> implements Docu
   @override
   Future<List<Document>> build() async => [];
   @override
-  Future<void> importDocument(String title, String filePath, {String? folderId}) async {}
+  Future<String> importDocument(String title, String filePath) async => 'mock-id';
   @override
   Future<void> renameDocument(String id, String newTitle) async {}
   @override
   Future<void> moveDocument(String id, String? newFolderId) async {}
   @override
   Future<void> deleteDocument(String id) async {}
-  @override
-  Future<void> openDocument(Document doc) async {}
 }
 
 void main() {

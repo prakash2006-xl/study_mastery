@@ -19,7 +19,7 @@ class PremiumSidebar extends StatelessWidget {
         children: [
           // Header / Logo
           Padding(
-            padding: const EdgeInsets.only(top: 32.0, left: 24.0, bottom: 32.0),
+            padding: const EdgeInsets.only(top: 32.0, left: 24.0, bottom: 32.0, right: 16.0),
             child: Row(
               children: [
                 Container(
@@ -31,25 +31,28 @@ class PremiumSidebar extends StatelessWidget {
                   child: const Icon(Icons.menu_book, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PLOS',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PLOS',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Your Learning OS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      Text(
+                        'Your Learning OS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -120,6 +123,12 @@ class PremiumSidebar extends StatelessWidget {
                   isSelected: selectedIndex == 9,
                   onTap: () => onDestinationSelected(9),
                 ),
+                _SidebarItem(
+                  icon: Icons.family_restroom_rounded,
+                  label: 'Family Insights',
+                  isSelected: selectedIndex == 10,
+                  onTap: () => onDestinationSelected(10),
+                ),
               ],
             ),
           ),
@@ -145,31 +154,17 @@ class PremiumSidebar extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Kavin', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text('Stay Consistent 🚀', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text('Kanav Arora', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Free Plan', style: TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),
                   ),
-                  const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+                    onPressed: () {},
+                  ),
                 ],
               ),
-            ),
-          ),
-          // Sync Status
-          Padding(
-            padding: const EdgeInsets.only(left: 32.0, bottom: 24.0, top: 4.0),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle_outline, color: Theme.of(context).colorScheme.tertiary, size: 16),
-                const SizedBox(width: 8),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Synced', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    Text('All up to date', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                  ],
-                ),
-              ],
             ),
           ),
         ],
